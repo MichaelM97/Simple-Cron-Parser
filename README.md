@@ -4,14 +4,14 @@ A simple cron parser that takes a config file as input, and a simulated current 
 performed next.
 
 An example config file can be seen
-at [.src/test/kotlin/resources/test_config.txt](https://github.com/MichaelM97/SimpleCronParser/blob/main/src/test/resources/test_config.txt)
+at [.src/test/kotlin/resources/test_config.txt](https://github.com/MichaelM97/Simple-Cron-Parser/blob/main/src/test/resources/test_config.txt)
 
 ## Running the script
 
 Prerequisite - ensure that you have Java installed & available to run from the command line.
 
 1. Either compile the project per the instructions below or download the `jar`
-   from [Releases](https://github.com/MichaelM97/SimpleCronParser/releases)
+   from [Releases](https://github.com/MichaelM97/Simple-Cron-Parser/releases)
 2. Open the command line at the same directory as the `jar` and run the following command
 
 ```bash
