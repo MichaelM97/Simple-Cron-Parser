@@ -18,7 +18,7 @@ internal class ParseInputArgsUseCaseTest {
     @Test
     fun `Should parse valid input args and return`() {
         // Given
-        val args = arrayOf("my/file/path/config.txt", "16:10")
+        val args = arrayOf("16:10")
 
         // When
         val result = parseInputArgsUseCase(args)
@@ -26,18 +26,15 @@ internal class ParseInputArgsUseCaseTest {
         // Then
         assertTrue(result.isSuccess)
         assertEquals(
-            InputArgs(
-                configFilePath = "my/file/path/config.txt",
-                currentTime = CurrentTime(hour = 16, minute = 10),
-            ),
+            InputArgs(currentTime = CurrentTime(hour = 16, minute = 10)),
             result.getOrThrow(),
         )
     }
 
     @Test
-    fun `Should fail if not enough args passed`() {
+    fun `Should fail if no args passed`() {
         // Given
-        val args = arrayOf("my/file/path/config.txt")
+        val args = arrayOf<String>()
 
         // When
         val result = parseInputArgsUseCase(args)
@@ -50,7 +47,7 @@ internal class ParseInputArgsUseCaseTest {
     @ValueSource(strings = ["0", "invalid_time", "12:", "28:30", "12:72", "80:76"])
     fun `Should fail if invalid time arg passed`(invalidTimeArg: String) {
         // Given
-        val args = arrayOf("my/file/path/config.txt", invalidTimeArg)
+        val args = arrayOf(invalidTimeArg)
 
         // When
         val result = parseInputArgsUseCase(args)

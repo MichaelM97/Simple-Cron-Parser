@@ -11,13 +11,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
-internal class LoadConfigUseCaseTest {
+internal class BuildConfigUseCaseTest {
     private val mockConfigRepository: ConfigRepository = mockk()
-    private lateinit var loadConfigUseCase: LoadConfigUseCase
+    private lateinit var buildConfigUseCase: BuildConfigUseCase
 
     @BeforeEach
     fun before() {
-        loadConfigUseCase = LoadConfigUseCase(
+        buildConfigUseCase = BuildConfigUseCase(
             configRepository = mockConfigRepository,
         )
     }
@@ -25,7 +25,6 @@ internal class LoadConfigUseCaseTest {
     @Test
     fun `Should return success when repository is successful`() {
         // Given
-        val configFilePath = "my/file/path/config.txt"
         val configLines = listOf(
             ConfigLine(
                 minutes = ConfigTime.All,
@@ -38,10 +37,10 @@ internal class LoadConfigUseCaseTest {
                 command = "run_me_at_always",
             ),
         )
-        every { mockConfigRepository.loadConfigFile(configFilePath) } returns Result.success(configLines)
+        every { mockConfigRepository.getConfigLines() } returns Result.success(configLines)
 
         // When
-        val result = loadConfigUseCase(configFilePath)
+        val result = buildConfigUseCase()
 
         // Then
         assertTrue(result.isSuccess)
@@ -51,11 +50,10 @@ internal class LoadConfigUseCaseTest {
     @Test
     fun `Should return failure when repository fails`() {
         // Given
-        val configFilePath = "my/file/path/config.txt"
-        every { mockConfigRepository.loadConfigFile(configFilePath) } returns Result.failure(Exception())
+        every { mockConfigRepository.getConfigLines() } returns Result.failure(Exception())
 
         // When
-        val result = loadConfigUseCase(configFilePath)
+        val result = buildConfigUseCase()
 
         // Then
         assertTrue(result.isFailure)

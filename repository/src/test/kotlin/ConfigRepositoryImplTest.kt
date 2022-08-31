@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 internal class ConfigRepositoryImplTest {
-    private val mockFileDataSource: FileDataSource = mockk()
+    private val mockStandardInputDataSource: StandardInputDataSource = mockk()
     private val mockConfigTimeMapper: ConfigTimeMapper = mockk()
     private lateinit var configRepositoryImpl: ConfigRepositoryImpl
 
@@ -21,24 +21,24 @@ internal class ConfigRepositoryImplTest {
     fun before() {
         every { mockConfigTimeMapper.fromString("*", any()) } returns Result.success(ConfigTime.All)
         configRepositoryImpl = ConfigRepositoryImpl(
-            fileDataSource = mockFileDataSource,
+            standardInputDataSource = mockStandardInputDataSource,
             configTimeMapper = mockConfigTimeMapper,
         )
     }
 
     @Nested
-    inner class LoadConfigFile {
+    inner class GetConfigLines {
         @Test
-        fun `Should parse config file and return success`() {
+        fun `Should parse stdin lines and return success`() {
             // Given
-            val path = "my/path/config.txt"
-            val fileLines = listOf(
+            val stdinLines: List<String?> = listOf(
                 "30 1 /bin/run_me_daily",
                 "45 * /bin/run_me_hourly",
                 "* * /bin/run_me_every_minute",
                 "* 19 /bin/run_me_sixty_times",
+                null,
             )
-            every { mockFileDataSource.loadFileFromPath(path) } returns Result.success(fileLines)
+            every { mockStandardInputDataSource.readNextLine() } returnsMany stdinLines
             every {
                 mockConfigTimeMapper.fromString("30", ConfigTimeMapper.ConfigTimeType.MINUTE)
             } returns Result.success(ConfigTime.Value(30))
@@ -53,7 +53,7 @@ internal class ConfigRepositoryImplTest {
             } returns Result.success(ConfigTime.Value(19))
 
             // When
-            val result = configRepositoryImpl.loadConfigFile(path)
+            val result = configRepositoryImpl.getConfigLines()
 
             // Then
             assertTrue(result.isSuccess)
@@ -85,17 +85,17 @@ internal class ConfigRepositoryImplTest {
         }
 
         @Test
-        fun `Should parse config file and return success, skipping invalid lines`() {
+        fun `Should parse stdin lines and return success, skipping invalid lines`() {
             // Given
-            val path = "my/path/config.txt"
-            val fileLines = listOf(
+            val stdinLines: List<String?> = listOf(
                 "30 1 /bin/run_me_daily",
                 "45 *",
                 "/bin/run_me_hourly",
                 "* * /bin/run_me_every_minute",
                 "* 24 /bin/run_me_sixty_times",
+                null,
             )
-            every { mockFileDataSource.loadFileFromPath(path) } returns Result.success(fileLines)
+            every { mockStandardInputDataSource.readNextLine() } returnsMany stdinLines
             every {
                 mockConfigTimeMapper.fromString("30", ConfigTimeMapper.ConfigTimeType.MINUTE)
             } returns Result.success(ConfigTime.Value(30))
@@ -107,7 +107,7 @@ internal class ConfigRepositoryImplTest {
             } returns Result.failure(Exception())
 
             // When
-            val result = configRepositoryImpl.loadConfigFile(path)
+            val result = configRepositoryImpl.getConfigLines()
 
             // Then
             assertTrue(result.isSuccess)
@@ -129,29 +129,28 @@ internal class ConfigRepositoryImplTest {
         }
 
         @Test
-        fun `Should return failure if loading file failed`() {
+        fun `Should return failure if no lines in stdin`() {
             // Given
-            val path = "my/path/config.txt"
-            every { mockFileDataSource.loadFileFromPath(path) } returns Result.failure(Exception())
+            every { mockStandardInputDataSource.readNextLine() } returns null
 
             // When
-            val result = configRepositoryImpl.loadConfigFile(path)
+            val result = configRepositoryImpl.getConfigLines()
 
             // Then
             assertTrue(result.isFailure)
         }
 
         @Test
-        fun `Should return failure if all lines are invalid`() {
+        fun `Should return failure if all stdin lines are invalid`() {
             // Given
-            val path = "my/path/config.txt"
-            val fileLines = listOf(
+            val stdinLines: List<String?> = listOf(
                 "45 *",
                 "/bin/run_me_hourly",
                 "* 24 /bin/run_me_sixty_times",
                 "60 * /bin/run_me_sixty_times",
+                null,
             )
-            every { mockFileDataSource.loadFileFromPath(path) } returns Result.success(fileLines)
+            every { mockStandardInputDataSource.readNextLine() } returnsMany stdinLines
             every {
                 mockConfigTimeMapper.fromString("24", ConfigTimeMapper.ConfigTimeType.HOUR)
             } returns Result.failure(Exception())
@@ -160,7 +159,7 @@ internal class ConfigRepositoryImplTest {
             } returns Result.failure(Exception())
 
             // When
-            val result = configRepositoryImpl.loadConfigFile(path)
+            val result = configRepositoryImpl.getConfigLines()
 
             // Then
             assertTrue(result.isFailure)

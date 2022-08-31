@@ -10,25 +10,31 @@ import models.InputArgs
 fun main(args: Array<String>) {
     // Build the dependency graph
     val mainComponent = MainComponent()
-    // Process the input args
-    processInput(args, mainComponent)
+    // Parse the input args
+    val inputArgs = parseInputArgs(args, mainComponent) ?: return
+    // Load the config
+    val config = loadConfig(mainComponent) ?: return
+    // Build the output & print
+    buildAndPrintOutput(config, inputArgs, mainComponent)
 }
 
-private fun processInput(args: Array<String>, mainComponent: MainComponent) {
+private fun parseInputArgs(args: Array<String>, mainComponent: MainComponent): InputArgs? {
     val parseInputArgsUseCase = mainComponent.domainModule.parseInputArgsUseCaseFactory.create()
     parseInputArgsUseCase(args)
-        .onSuccess { loadConfig(it, mainComponent) }
+        .onSuccess { return it }
         .onFailure { println(it.message) }
+    return null
 }
 
-private fun loadConfig(inputArgs: InputArgs, mainComponent: MainComponent) {
+private fun loadConfig(mainComponent: MainComponent): Config? {
     val loadConfigUseCase = mainComponent.domainModule.loadConfigUseCaseFactory.create()
-    loadConfigUseCase(inputArgs.configFilePath)
-        .onSuccess { printOutput(it, inputArgs, mainComponent) }
+    loadConfigUseCase()
+        .onSuccess { return it }
         .onFailure { println(it.message) }
+    return null
 }
 
-private fun printOutput(config: Config, inputArgs: InputArgs, mainComponent: MainComponent) {
+private fun buildAndPrintOutput(config: Config, inputArgs: InputArgs, mainComponent: MainComponent) {
     val buildConfigOutputUseCase = mainComponent.domainModule.buildConfigOutputUseCaseFactory.create()
     buildConfigOutputUseCase(config, inputArgs.currentTime)
         .forEach { println(it) }

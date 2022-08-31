@@ -5,7 +5,7 @@ class RepositoryModule(
 ) {
     private val configTimeMapperFactory: ConfigTimeMapperFactory = ConfigTimeMapperFactory()
     val configRepositoryFactory: ConfigRepositoryFactory = ConfigRepositoryFactory(
-        fileDataSource = dataModule.fileDataSourceFactory.create(),
+        standardInputDataSource = dataModule.standardInputDataSourceFactory.create(),
         configTimeMapper = configTimeMapperFactory.create(),
     )
 }

@@ -1,13 +1,13 @@
 import models.Config
 
-class LoadConfigUseCase internal constructor(
+class BuildConfigUseCase internal constructor(
     private val configRepository: ConfigRepository,
 ) {
     /**
-     * Loads the config file located at the passed [configFilePath].
+     * Loads a list of config lines from stdin & builds a [Config].
      */
-    operator fun invoke(configFilePath: String): Result<Config> {
-        val configLines = configRepository.loadConfigFile(configFilePath)
+    operator fun invoke(): Result<Config> {
+        val configLines = configRepository.getConfigLines()
         return if (configLines.isSuccess) {
             Result.success(Config(configLines = configLines.getOrThrow()))
         } else {

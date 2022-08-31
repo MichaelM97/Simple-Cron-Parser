@@ -2,9 +2,6 @@ package di
 
 import ConfigRepository
 
-/**
- * TODO
- */
 class DomainModule(
     configRepository: ConfigRepository,
 ) {

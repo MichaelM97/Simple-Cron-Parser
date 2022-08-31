@@ -5,8 +5,7 @@ import models.ConfigLine
  */
 interface ConfigRepository {
     /**
-     * Loads & reads the config located at the passed [configFilePath].
-     * Returns a list of validated [ConfigLine]'s.
+     * Builds a list of validated [ConfigLine]'s.
      */
-    fun loadConfigFile(configFilePath: String): Result<List<ConfigLine>>
+    fun getConfigLines(): Result<List<ConfigLine>>
 }
